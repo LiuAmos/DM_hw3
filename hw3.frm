@@ -83,6 +83,7 @@ Dim datanum As Integer
 Dim nei_number As Integer
 Dim data2darray(9, 1483) As String
 Dim totalfivefoldindex() As String
+Dim allattribute(7) As Double
 
 
 
@@ -123,25 +124,25 @@ xydistance = (totalsum ^ (1 / 2))
 distance = xydistance
 End Function
 
-Static Function gmax(ByRef goodarray() As Double, ByRef attrarray() As Double)
-Dim tempgoodarray() As Double
-Dim tempattrarray() As Double
-Dim tempmax As Double
-Dim attrmax As Double
-attrmax = -100
-tempmax = -100
-tempgoodarray() = goodarray()
-tempattrarray() = attrarray()
+Static Function gmax(ByRef distarray() As Double, ByRef distindexarray() As Double)
+Dim tempdistarray() As Double
+Dim tempdistindexarray() As Double
+Dim distmax As Double
+Dim indexmax As Double
+distmax = -100
+indexmax = -100
+tempdistarray() = distarray()
+tempdistindexarray() = distindexarray()
 
-For i = 0 To UBound(tempgoodarray)
-If tempmax < tempgoodarray(i) Then
-tempmax = tempgoodarray(i)
-attrmax = tempattrarray(i)
+For i = 0 To UBound(tempdistarray)
+If tempmax < tempdistarray(i) Then
+distmax = tempdistarray(i)
+indexmax = tempdistindexarray(i)
 
 End If
 Next i
 
-gmax = CStr(attrmax) + "," + CStr(tempmax)
+gmax = CStr(indexmax) + "," + CStr(distmax)
 End Function
 
 Static Function sortrnd(ByRef tempdataindex() As Double, ByRef temprndarray() As Double)
@@ -175,21 +176,29 @@ Dim distarrayindex() As Double
 Dim topndist() As Double
 Dim topndistindex() As Double
 Dim tempindexattr() As String
+Dim attributesubset() As Double
+Dim tempgmax As String
 
+For i = 0 To 7
+allattribute(i) = i + 1
+Next i
+attributesubset() = allattribute()
 tttemptrainarray() = ttemptrainarray()
+
 ReDim distarray(UBound(tttemptrainarray))
 ReDim distarrayindex(UBound(tttemptrainarray))
-Dim tempgmax As String
 ReDim topndist(nei_number - 1) '存前n近的值
 ReDim topndistindex(nei_number - 1) '存前n近的index
 
 For i = 0 To UBound(tttemptrainarray)
-'distarray(i)=distance(testoneindex,tttemptrainarray(i))
-'distarrayindex(i)=tttemptrainarray(i)
+distarray(i) = distance(testoneindex, tttemptrainarray(i), attributesubset)
+distarrayindex(i) = tttemptrainarray(i)
 Next i
 
+
+
 For i = 0 To (nei_number - 1)
-'tempgmax=gmax(distarray,distarrayindex)
+tempgmax = gmax(distarray, distarrayindex)
 tempindexattr = Split(tempgmax, ",")
 topndistindex(i) = tempindexattr(0)
 
@@ -203,11 +212,15 @@ Next j
 
 Next i
 
+For i = 0 To UBound(topndistindex)
+    List1.AddItem topndistindex(i)
+Next i
+List1.AddItem ""
 '從這裡開始!!!!
 '用topndistindex()找到對應的class
 '比較class然後投票決定predclass是什麼
 
-predclass = CStr(attrmax) + "," + CStr(tempmax)
+predclass = "class"
 End Function
 
 Static Function correctrate(ByRef testarray() As Double, ByRef trainarray() As Double)
@@ -220,12 +233,13 @@ temptestarray() = testarray()
 temptrainarray() = trainarray()
 correctnum = 0
 
-For i = 0 To UBound(temptestarray)
-predictclass = predclass(testarray(i), temptrainarray)
-If data2darray(9, testarray(i)) = predictclass Then
-correctnum = correctnum + 1
-End If
-Next i
+predictclass = predclass(temptestarray(i), temptrainarray)
+'For i = 0 To UBound(temptestarray)
+'predictclass = predclass(temptestarray(i), temptrainarray)
+'If data2darray(9, testarray(i)) = predictclass Then
+'correctnum = correctnum + 1
+'End If
+'Next i
 
 correctrateresult = (correctnum) / (UBound(temptestarray) + 1)
 
@@ -317,7 +331,7 @@ Dim eachtestDouble() As Double
 'distanceDouble = distance(xi, yi, dimnum)
 'List1.AddItem distanceDouble
 '目前進度完成測試distance
-GoTo endd
+
 '測試rnd
 'Randomize (Timer)
 'testrnd = Rnd()
@@ -391,8 +405,8 @@ correctratearray(i) = correctrate(eachtestDouble, eachtrainDouble)
 Next i
 
 
-
-endd:
+'GoTo endd
+'endd:
 End Sub
 
 Private Sub datanumber_Change()
