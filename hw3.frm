@@ -83,6 +83,7 @@ Dim datanum As Integer
 Dim nei_number As Integer
 Dim data2darray(9, 1483) As String
 Dim totalfivefoldindex() As String
+Dim attr9array(9) As String
 Dim allattribute(7) As Double
 
 
@@ -167,6 +168,202 @@ Next i
 
 sortrnd = "sortrnd"
 End Function
+Static Function vote(ByRef candidateclass() As String)
+Dim tempcandidateclass() As String
+Dim eachclassnum(9) As Double
+Dim finalclass As String
+tempcandidateclass() = candidateclass()
+For i = 0 To 9
+eachclassnum(i) = 0
+Next i
+
+For i = 0 To UBound(tempcandidateclass)
+For j = 0 To 9
+If tempcandidateclass(i) = attr9array(j) Then
+eachclassnum(j) = eachclassnum(j) + 1
+End If
+Next j
+Next i
+
+Select Case nei_number
+    Case 3
+        Dim candidate(2) As String
+        Dim c As Double
+        Dim rndindex As Double
+        c = 0
+        For i = 0 To 9
+        
+        If eachclassnum(i) >= 2 Then
+        finalclass = attr9array(i)
+        GoTo voteend
+        End If
+        
+        If eachclassnum(i) = 1 Then
+        candidate(c) = attr9array(i)
+        c = c + 1
+        End If
+        
+        Next i
+        rndindex = rndclass(nei_number)
+        finalclass = candidate(rndindex)
+        GoTo voteend
+        
+    Case 4
+        Dim twocounter As Double
+        Dim onecounter As Double
+        Dim rndindex4 As Double
+        Dim candidatetwo(1) As String
+        Dim candidatefour(3) As String
+        twocounter = 0
+        onecounter = 0
+        
+        For i = 0 To 9
+        
+        If eachclassnum(i) = 1 Then
+        candidatefour(onecounter) = attr9array(i)
+        onecounter = onecounter + 1
+        End If
+        
+        If eachclassnum(i) > 2 Then
+        finalclass = attr9array(i)
+        GoTo voteend
+        End If
+        
+        If eachclassnum(i) = 2 Then
+        finalclass = attr9array(i)
+        candidatetwo(twocounter) = attr9array(i)
+        twocounter = twocounter + 1
+        End If
+        
+        If twocounter = 2 Then
+        rndindex4 = rndclass(twocounter)
+        finalclass = candidatetwo(rndindex4)
+        GoTo voteend
+        End If
+        
+        If onecounter = 4 Then
+        rndindex4 = rndclass(onecounter)
+        finalclass = candidatefour(rndindex4)
+        GoTo voteend
+        End If
+        
+        Next i
+        GoTo voteend
+    Case 5
+        Dim twocounter5 As Double
+        Dim onecounter5 As Double
+        Dim rndindex5 As Double
+        Dim candidatetwo5(1) As String
+        Dim candidatefive5(4) As String
+        twocounter5 = 0
+        onecounter5 = 0
+        
+        For i = 0 To 9
+        
+        If eachclassnum(i) = 1 Then
+        candidatefive5(onecounter5) = attr9array(i)
+        onecounter5 = onecounter5 + 1
+        End If
+        
+        If eachclassnum(i) >= 3 Then
+        finalclass = attr9array(i)
+        GoTo voteend
+        End If
+        
+        If eachclassnum(i) = 2 Then
+        finalclass = attr9array(i)
+        candidatetwo5(twocounter5) = attr9array(i)
+        twocounter5 = twocounter5 + 1
+        End If
+        
+        If twocounter5 = 2 Then
+        rndindex5 = rndclass(twocounter5)
+        finalclass = candidatetwo5(rndindex5)
+        GoTo voteend
+        End If
+        
+        If onecounter5 = 5 Then
+        rndindex5 = rndclass(onecounter5)
+        finalclass = candidatefive5(rndindex5)
+        GoTo voteend
+        End If
+        
+        Next i
+        GoTo voteend
+    Case 6
+        Dim threecounter6 As Double
+        Dim twocounter6 As Double
+        Dim onecounter6 As Double
+        Dim rndindex6 As Double
+        Dim flag As Double
+        Dim candidatetwo6(2) As String
+        Dim candidatethree6(1) As String
+        Dim candidatesix6(5) As String
+        flag = 0
+        twocounter6 = 0
+        onecounter6 = 0
+        threecounter6 = 0
+        
+        For i = 0 To 9
+        
+        If eachclassnum(i) = 1 Then
+        candidatesix6(onecounter6) = attr9array(i)
+        onecounter6 = onecounter6 + 1
+        End If
+        
+        If eachclassnum(i) > 3 Then
+        finalclass = attr9array(i)
+        GoTo voteend
+        End If
+        
+        If eachclassnum(i) = 3 Then
+        flag = 1
+        finalclass = attr9array(i)
+        candidatethree6(threecounter6) = attr9array(i)
+        threecounter6 = threecounter6 + 1
+        End If
+        
+        If threecounter6 = 2 Then
+        rndindex6 = rndclass(threecounter6)
+        finalclass = candidatethree6(rndindex6)
+        GoTo voteend
+        End If
+        
+        If eachclassnum(i) = 2 And flag = 0 Then
+        finalclass = attr9array(i)
+        candidatetwo6(twocounter6) = attr9array(i)
+        twocounter6 = twocounter6 + 1
+        End If
+        
+        If twocounter6 = 2 And onecounter6 = 2 Then
+        rndindex6 = rndclass(twocounter6)
+        finalclass = candidatetwo6(rndindex6)
+        GoTo voteend
+        End If
+        
+        If twocounter6 = 3 Then
+        rndindex6 = rndclass(twocounter6)
+        finalclass = candidatetwo6(rndindex6)
+        GoTo voteend
+        End If
+        
+        If onecounter6 = 6 Then
+        rndindex6 = rndclass(onecounter6)
+        finalclass = candidatesix6(rndindex6)
+        GoTo voteend
+        End If
+        
+        Next i
+End Select
+voteend:
+vote = finalclass
+End Function
+Static Function rndclass(ByVal num As Double)
+Dim returnnum As Double
+Randomize (Timer)
+returnnum = Int(Rnd() * num)
+rndclass = returnnum
+End Function
 
 Static Function predclass(ByVal testoneindex As Double, ByRef ttemptrainarray() As Double)
 Dim tttemptrainarray() As Double
@@ -178,6 +375,8 @@ Dim topndistindex() As Double
 Dim tempindexattr() As String
 Dim attributesubset() As Double
 Dim tempgmax As String
+Dim classarray() As String
+ReDim classarray(nei_number - 1)
 
 For i = 0 To 7
 allattribute(i) = i + 1
@@ -213,10 +412,10 @@ Next j
 Next i
 
 For i = 0 To UBound(topndistindex)
-    List1.AddItem topndistindex(i)
+    classarray(i) = data2darray(9, topndistindex(i))
 Next i
-List1.AddItem ""
-'從這裡開始!!!!
+
+'List1.AddItem ""
 '用topndistindex()找到對應的class
 '比較class然後投票決定predclass是什麼
 
@@ -233,13 +432,13 @@ temptestarray() = testarray()
 temptrainarray() = trainarray()
 correctnum = 0
 
+'predictclass = predclass(temptestarray(0), temptrainarray)
+For i = 0 To UBound(temptestarray)
 predictclass = predclass(temptestarray(i), temptrainarray)
-'For i = 0 To UBound(temptestarray)
-'predictclass = predclass(temptestarray(i), temptrainarray)
-'If data2darray(9, testarray(i)) = predictclass Then
-'correctnum = correctnum + 1
-'End If
-'Next i
+If data2darray(9, testarray(i)) = predictclass Then
+correctnum = correctnum + 1
+End If
+Next i
 
 correctrateresult = (correctnum) / (UBound(temptestarray) + 1)
 
@@ -317,7 +516,26 @@ Dim eachtrainsubset(3) As Double
 Dim correctratearray(4) As Double
 Dim eachtrainDouble() As Double
 Dim eachtestDouble() As Double
+'測試rndclass
+'Dim num As Double
+'Dim result As Double
+'num = 4
+'result = rndclass(num)
+'List1.AddItem result
 
+'測試vote
+'Dim votestring(5) As String
+'Dim result As String
+''CYT,NUC,MIT,VAC,POX,ERL
+'votestring(0) = "ERL"
+'votestring(1) = "ERL"
+'votestring(2) = "POX"
+'votestring(3) = "POX"
+'votestring(4) = "POX"
+'votestring(5) = "POX"
+'result = vote(votestring)
+'List1.AddItem result
+GoTo endd
 '測試distance
 'Dim distanceDouble As Double
 'Dim xi As Double
@@ -405,8 +623,8 @@ correctratearray(i) = correctrate(eachtestDouble, eachtrainDouble)
 Next i
 
 
-'GoTo endd
-'endd:
+
+endd:
 End Sub
 
 Private Sub datanumber_Change()
@@ -427,6 +645,16 @@ Private Sub read_Click()
 List1.Clear
 Dim datacounter As Integer
 Dim temp() As String
+attr9array(0) = "CYT"
+attr9array(1) = "NUC"
+attr9array(2) = "MIT"
+attr9array(3) = "ME3"
+attr9array(4) = "ME2"
+attr9array(5) = "ME1"
+attr9array(6) = "EXC"
+attr9array(7) = "VAC"
+attr9array(8) = "POX"
+attr9array(9) = "ERL"
 List1.AddItem nei_number
 List1.AddItem ""
 
