@@ -18,7 +18,7 @@ Begin VB.Form Form1
       Width           =   2175
    End
    Begin VB.CommandButton cross_validation 
-      Caption         =   "5-fold cross validation"
+      Caption         =   "5-fold cross validation(total attributes)"
       Height          =   375
       Left            =   7200
       TabIndex        =   6
@@ -43,10 +43,10 @@ Begin VB.Form Form1
    End
    Begin VB.ListBox List1 
       Height          =   6900
-      Left            =   240
+      Left            =   120
       TabIndex        =   3
       Top             =   960
-      Width           =   6735
+      Width           =   6975
    End
    Begin VB.TextBox nerghbors_num 
       Height          =   375
@@ -84,7 +84,7 @@ Dim nei_number As Integer
 Dim data2darray(9, 1483) As String
 Dim totalfivefoldindex() As String
 Dim attr9array(9) As String
-Dim allattribute(7) As Double
+Dim allattribute() As Double
 
 
 
@@ -146,6 +146,37 @@ Next i
 gmax = CStr(indexmax) + "," + CStr(distmax)
 End Function
 
+Static Function topNindex(ByRef distarray() As Double, ByRef distindexarray() As Double)
+Dim tempdistarray() As Double
+Dim tempdistindexarray() As Double
+Dim distmin As Double
+Dim indexmin() As Double
+ReDim indexmin(nei_number - 1)
+tempdistarray() = distarray()
+tempdistindexarray() = distindexarray()
+'這裡卡卡的
+For j = 0 To (nei_number - 1)
+distmin = 100
+'indexmin = 100
+
+For i = 0 To UBound(tempdistarray)
+If distmin > tempdistarray(i) Then
+distmin = tempdistarray(i)
+indexmin(j) = tempdistindexarray(i)
+End If
+Next i
+
+For k = 0 To UBound(tempdistindexarray)
+If indexmin(j) = tempdistindexarray(k) Then
+tempdistarray(k) = 90
+End If
+Next k
+
+Next j
+
+topNindex = indexmin()
+End Function
+
 Static Function sortrnd(ByRef tempdataindex() As Double, ByRef temprndarray() As Double)
 
 Dim tmp As Double
@@ -205,7 +236,7 @@ Select Case nei_number
         
         Next i
         rndindex = rndclass(nei_number)
-        finalclass = candidate(rndindex)
+        finalclass = candidate(rndindex) '不懂為啥設為0後1-8跟8-1依舊不同
         GoTo voteend
         
     Case 4
@@ -376,50 +407,84 @@ Dim tempindexattr() As String
 Dim attributesubset() As Double
 Dim tempgmax As String
 Dim classarray() As String
+Dim finalclass As String
+Dim sortresult As String
 ReDim classarray(nei_number - 1)
 
-For i = 0 To 7
-allattribute(i) = i + 1
-Next i
-attributesubset() = allattribute()
-tttemptrainarray() = ttemptrainarray()
 
-ReDim distarray(UBound(tttemptrainarray))
+attributesubset() = allattribute() '之後不同feature個數的時候
+tttemptrainarray() = ttemptrainarray()
+'測試
+'For i = 0 To UBound(attributesubset)
+'List1.AddItem attributesubset(i)
+'Next i
+
+
+ReDim distarray(UBound(tttemptrainarray)) '存trainarray每點的距離
 ReDim distarrayindex(UBound(tttemptrainarray))
 ReDim topndist(nei_number - 1) '存前n近的值
-ReDim topndistindex(nei_number - 1) '存前n近的index
+'ReDim topndistindex(nei_number - 1) '存前n近的index
+
+'List1.AddItem UBound(tttemptrainarray) + 1
 
 For i = 0 To UBound(tttemptrainarray)
 distarray(i) = distance(testoneindex, tttemptrainarray(i), attributesubset)
 distarrayindex(i) = tttemptrainarray(i)
+'List1.AddItem distarrayindex(i)
+'List1.AddItem distarray(i)
 Next i
 
 
+'用排序選topn太慢
+'sortresult = sortrnd(distarrayindex, distarray)
+''看排序結果
+'For i = 0 To UBound(distarrayindex)
+'List1.AddItem distarray(i)
+'List1.AddItem distarrayindex(i)
+'Next i
+'List1.AddItem ""
 
-For i = 0 To (nei_number - 1)
-tempgmax = gmax(distarray, distarrayindex)
-tempindexattr = Split(tempgmax, ",")
-topndistindex(i) = tempindexattr(0)
+'topn
+topndistindex() = topNindex(distarray, distarrayindex)
+'看topn
+'For i = 0 To UBound(topndistindex)
+'List1.AddItem topndistindex(i)
+'Next i
 
-'把top1設定成-1
-For j = 0 To UBound(tttemptrainarray)
-If (tttemptrainarray(j)) = tempindexattr(0) Then
-    tttemptrainarray(j) = -1
-    distarray(j) = -1
-End If
-Next j
+'把前k小的距離index保存下來
+'For i = 0 To (nei_number - 1)
+'classarray(i) = distarrayindex(i)
+''List1.AddItem classarray(i)
+'Next i
 
-Next i
 
+'For i = 0 To (nei_number - 1)
+'tempgmax = gmax(distarray, distarrayindex)
+'tempindexattr = Split(tempgmax, ",")
+'topndistindex(i) = tempindexattr(0)
+'
+''把top1設定成-1
+'For j = 0 To UBound(tttemptrainarray)
+'If (tttemptrainarray(j)) = tempindexattr(0) Then
+'    tttemptrainarray(j) = -1
+'    distarray(j) = -1
+'End If
+'Next j
+'
+'Next i
+'
+'用topndistindex()找到對應的class
 For i = 0 To UBound(topndistindex)
     classarray(i) = data2darray(9, topndistindex(i))
 Next i
 
-'List1.AddItem ""
-'用topndistindex()找到對應的class
 '比較class然後投票決定predclass是什麼
+finalclass = vote(classarray)
+'GoTo predclassend
 
-predclass = "class"
+'predclassend:
+predclass = finalclass
+
 End Function
 
 Static Function correctrate(ByRef testarray() As Double, ByRef trainarray() As Double)
@@ -432,10 +497,10 @@ temptestarray() = testarray()
 temptrainarray() = trainarray()
 correctnum = 0
 
-'predictclass = predclass(temptestarray(0), temptrainarray)
 For i = 0 To UBound(temptestarray)
 predictclass = predclass(temptestarray(i), temptrainarray)
-If data2darray(9, testarray(i)) = predictclass Then
+'predictclass = data2darray(9, temptestarray(i)) '測試用
+If data2darray(9, temptestarray(i)) = predictclass Then
 correctnum = correctnum + 1
 End If
 Next i
@@ -504,6 +569,92 @@ For i = 0 To 4
 Next i
 fivefoldindex = foldindex() '回傳分好5組的index的字串
 End Function
+Static Function correctratesutset(ByRef attrsebset() As Double)
+Dim trainindexstring As String
+Dim trainnumber As Double
+Dim testrnd As Double
+Dim subsetcounter As Double
+Dim eachtrainsubset(3) As Double
+Dim correctratearray(4) As Double
+Dim eachtrainDouble() As Double
+Dim eachtestDouble() As Double
+Dim avgcorrectrate As Double
+avgcorrectrate = 0
+allattribute() = attrsebset()
+
+totalfivefoldindex() = fivefoldindex()
+
+'選一個當測試資料,其他四個合成訓練資料
+For i = 0 To 4
+Dim eachtrain() As String
+Dim eachtrainstring As String
+Dim eachtest() As String
+Dim eachteststring As String
+subsetcounter = 0
+eachtrainstring = ""
+eachteststring = ""
+
+'區分出每次的訓練以及測試資料
+For j = 0 To 4
+    If j <> i Then
+    eachtrainsubset(subsetcounter) = j
+    subsetcounter = subsetcounter + 1
+    End If
+Next j
+
+For j = 0 To 3
+    eachtrainstring = eachtrainstring + totalfivefoldindex(eachtrainsubset(j))
+Next j
+
+eachteststring = Trim(totalfivefoldindex(i))
+eachtrainstring = Trim(eachtrainstring)
+
+eachtest() = Split(eachteststring, " ")
+eachtrain() = Split(eachtrainstring, " ")
+
+ReDim eachtestDouble(UBound(eachtest))
+ReDim eachtrainDouble(UBound(eachtrain))
+
+For j = 0 To UBound(eachtest)
+eachtestDouble(j) = CDbl(eachtest(j))
+Next j
+
+For j = 0 To UBound(eachtrain)
+eachtrainDouble(j) = CDbl(eachtrain(j))
+Next j
+
+correctratearray(i) = correctrate(eachtestDouble, eachtrainDouble)
+
+Next i
+
+For i = 0 To 4
+avgcorrectrate = avgcorrectrate + correctratearray(i)
+Next i
+avgcorrectrate = (avgcorrectrate / 5)
+
+correctratesutset = avgcorrectrate
+End Function
+
+Private Sub backward_Click()
+'測試correctratesutset
+List1.Clear
+'Dim subset(6) As Double
+'Dim result As Double
+'For i = 0 To UBound(subset)
+'subset(i) = i + 1
+'Next i
+'result = correctratesutset(subset)
+'List1.AddItem result
+'
+Dim subset1(7) As Double
+Dim result1 As Double
+For i = 0 To UBound(subset1)
+subset1(i) = (8 - i)
+Next i
+result1 = correctratesutset(subset1)
+List1.AddItem result1
+
+End Sub
 
 Private Sub cross_validation_Click()
 List1.Clear
@@ -516,6 +667,34 @@ Dim eachtrainsubset(3) As Double
 Dim correctratearray(4) As Double
 Dim eachtrainDouble() As Double
 Dim eachtestDouble() As Double
+Dim avgcorrectrate As Double
+avgcorrectrate = 0
+
+'這是在8個屬性都選的情況下
+ReDim allattribute(7)
+For i = 0 To 7
+allattribute(i) = i + 1
+Next i
+
+'測試topNindex(dist,index)
+'Dim index(4) As Double
+'Dim dist(4) As Double
+'Dim result() As Double
+'index(0) = 1
+'index(1) = 2
+'index(2) = 3
+'index(3) = 4
+'index(4) = 5
+'dist(0) = 7
+'dist(1) = 8
+'dist(2) = 3
+'dist(3) = 9
+'dist(4) = 2
+'result() = topNindex(dist, index)
+'For i = 0 To UBound(result)
+'List1.AddItem result(i)
+'Next i
+
 '測試rndclass
 'Dim num As Double
 'Dim result As Double
@@ -524,18 +703,18 @@ Dim eachtestDouble() As Double
 'List1.AddItem result
 
 '測試vote
-'Dim votestring(5) As String
+'Dim votestring(2) As String
 'Dim result As String
 ''CYT,NUC,MIT,VAC,POX,ERL
 'votestring(0) = "ERL"
-'votestring(1) = "ERL"
+'votestring(1) = "POX"
 'votestring(2) = "POX"
-'votestring(3) = "POX"
-'votestring(4) = "POX"
-'votestring(5) = "POX"
+''votestring(3) = "POX"
+''votestring(4) = "POX"
+''votestring(5) = "POX"
 'result = vote(votestring)
 'List1.AddItem result
-GoTo endd
+
 '測試distance
 'Dim distanceDouble As Double
 'Dim xi As Double
@@ -546,9 +725,11 @@ GoTo endd
 'For i = 0 To UBound(dimnum)
 'dimnum(i) = (i + 1)
 'Next i
+'dimnum(3) = 7
+'dimnum(6) = 4
 'distanceDouble = distance(xi, yi, dimnum)
 'List1.AddItem distanceDouble
-'目前進度完成測試distance
+
 
 '測試rnd
 'Randomize (Timer)
@@ -573,6 +754,10 @@ GoTo endd
 
 '回傳分好五份的資料index
 totalfivefoldindex() = fivefoldindex()
+'For i = 0 To 4
+'List1.AddItem totalfivefoldindex(i)
+'Next i
+
 
 '選一個當測試資料,其他四個合成訓練資料
 For i = 0 To 4
@@ -603,8 +788,11 @@ eachtrainstring = Trim(eachtrainstring)
 eachtest() = Split(eachteststring, " ")
 eachtrain() = Split(eachtrainstring, " ")
 
-ReDim eachtestDouble(UBound(eachtest) + 1)
-ReDim eachtrainDouble(UBound(eachtrain) + 1)
+'看eachtest長度
+'List1.AddItem UBound(eachtest) + 1
+
+ReDim eachtestDouble(UBound(eachtest))
+ReDim eachtrainDouble(UBound(eachtrain))
 
 For j = 0 To UBound(eachtest)
 eachtestDouble(j) = CDbl(eachtest(j))
@@ -614,17 +802,46 @@ For j = 0 To UBound(eachtrain)
 eachtrainDouble(j) = CDbl(eachtrain(j))
 Next j
 '測試每次的test和train的筆數
-'List1.AddItem totalfivefoldindex(i)
+'If i = 0 Then
 'List1.AddItem UBound(eachtestDouble) + 1
-'List1.AddItem eachtrainDouble(0)
 'List1.AddItem UBound(eachtrainDouble) + 1
-'List1.AddItem ""
+'List1.AddItem "------------------------------"
+'For j = 0 To UBound(eachtestDouble)
+'List1.AddItem eachtestDouble(j)
+'Next j
+'List1.AddItem "----------------------------------------------------"
+'For j = 0 To UBound(eachtrainDouble)
+'List1.AddItem eachtrainDouble(j)
+'Next j
+'List1.AddItem "----------------------------------------------------"
+'correctratearray(i) = correctrate(eachtestDouble, eachtrainDouble)
+'List1.AddItem correctratearray(i)
+
+'測試predictclass
+'Dim testpredclass As String
+'testpredclass = predclass(6, eachtrainDouble)
+'List1.AddItem testpredclass
+'List1.AddItem data2darray(9, 6)
+'
+'End If 'i=0
+
+
+
 correctratearray(i) = correctrate(eachtestDouble, eachtrainDouble)
+'List1.AddItem correctratearray(i)
+
+
 Next i
 
+For i = 0 To 4
+avgcorrectrate = avgcorrectrate + correctratearray(i)
+Next i
+avgcorrectrate = (avgcorrectrate / 5)
 
+List1.AddItem avgcorrectrate
 
-endd:
+'GoTo endd
+'endd:
 End Sub
 
 Private Sub datanumber_Change()
@@ -635,7 +852,151 @@ Private Sub datatxt_Change()
 file = datatxt.Text
 End Sub
 
+Static Function unpickAttr(ByRef resultattrs() As Double)
+Dim tempresultattrs() As Double
+Dim allattr(7) As Double
+Dim unpickAttrs() As Double
+Dim counter As Double
+counter = 0
+tempresultattrs() = resultattrs()
 
+For i = 0 To 7
+    If tempresultattrs(i) = -1 Then
+        ReDim unpickAttrs(7 - i)
+        Exit For
+    End If
+Next i
+
+For i = 0 To 7
+    allattr(i) = i + 1 '注意
+Next i
+
+For i = 0 To 7
+    If tempresultattrs(i) <> -1 Then
+        allattr(tempresultattrs(i) - 1) = 10 '偵錯
+    End If
+Next i
+
+For i = 0 To 7
+    If allattr(i) <> 10 Then
+        unpickAttrs(counter) = allattr(i)
+        counter = counter + 1
+    End If
+Next i
+
+unpickAttr = unpickAttrs()
+
+End Function
+
+Private Sub forward_Click()
+List1.Clear
+'result = correctratesutset(subset)
+Dim resultattr(7) As Double '每個set的最大值新選的那個attr
+Dim resultmaxvalue(7) As Double '每個set數量的最大值
+Dim setnum() As Double
+
+Dim tempgoodness() As Double
+Dim tempattr() As Double
+
+For i = 0 To 7
+resultattr(i) = -1
+resultmaxvalue(i) = -1
+Next i
+
+For i = 0 To 7
+'先決定要丟入subsetgoodness的陣列長度
+ReDim setnum(i) '丟入subsetgoodness的陣列
+Dim tempunpickAttr() As Double
+ReDim tempgoodness(7 - i)
+ReDim tempattr(7 - i)
+
+
+
+'接著為該陣列塞入目前已選的attr
+
+If i = 0 Then
+    GoTo izero
+End If
+'把已經選好的resultattr丟給setnum
+   For j = 0 To (UBound(setnum) - 1)
+       setnum(j) = resultattr(j) '注意 一下
+   Next j
+izero:
+'跑unpickAttr()回傳還未被選的attr陣列
+tempunpickAttr() = unpickAttr(resultattr)
+
+'從0-7變成1-8
+'For j = 0 To UBound(tempunpickAttr)
+''tempunpickAttr(j) = tempunpickAttr(j) + 1
+'List1.AddItem tempunpickAttr(j)
+'Next j
+'List1.AddItem ""
+
+
+
+'跑回圈幫setnum(i)塞入不同還未被選的attr
+    For j = 0 To UBound(tempunpickAttr)
+        setnum(i) = tempunpickAttr(j) '幫setnum挑一個還沒進來的attr
+        tempattr(j) = tempunpickAttr(j) '丟進gmax用的
+        tempgoodness(j) = correctratesutset(setnum)
+    Next j
+tempgmaxstr = gmax(tempgoodness, tempattr)
+tempav = Split(tempgmaxstr, ",")
+resultattr(i) = CDbl(tempav(0))
+resultmaxvalue(i) = CDbl(tempav(1))
+
+
+'停止條件
+'If i > 0 Then
+'If resultmaxvalue(i) < resultmaxvalue(i - 1) Then
+'Exit For
+'End If
+'End If
+
+'GoTo test
+'test:
+
+Next i
+
+'把最終結果印出來
+For i = 0 To UBound(resultattr)
+List1.AddItem resultattr(i)
+List1.AddItem resultmaxvalue(i)
+List1.AddItem ""
+Next i
+
+'List1.AddItem "attribute:" + CStr(resultattr(0) + 1)
+'List1.AddItem resultmaxvalue(0)
+'
+'List1.AddItem "attribute:" + CStr(resultattr(0) + 1) + CStr(resultattr(1) + 1)
+'
+'List1.AddItem resultmaxvalue(1)
+'
+'List1.AddItem "attribute:" + CStr(resultattr(0) + 1) + CStr(resultattr(1) + 1) + CStr(resultattr(2) + 1)
+'List1.AddItem resultmaxvalue(2)
+'
+'List1.AddItem "attribute:" + CStr(resultattr(0) + 1) + CStr(resultattr(1) + 1) + CStr(resultattr(2) + 1) + CStr(resultattr(3) + 1)
+'List1.AddItem resultmaxvalue(3)
+'
+'List1.AddItem "attribute:" + CStr(resultattr(0) + 1) + CStr(resultattr(1) + 1) + CStr(resultattr(2) + 1) + CStr(resultattr(3) + 1) + CStr(resultattr(4) + 1)
+'List1.AddItem resultmaxvalue(4)
+'If choicefb = 0 Then
+'GoTo choicefbzero
+'End If
+'List1.AddItem "attribute:" + CStr(resultattr(0) + 1) + CStr(resultattr(1) + 1) + CStr(resultattr(2) + 1) + CStr(resultattr(3) + 1) + CStr(resultattr(4) + 1) + CStr(resultattr(5) + 1)
+'List1.AddItem resultmaxvalue(5)
+'choicefbzero:
+
+
+
+'動態陣列測試
+'Dim testnum() As Double
+'For i = 0 To 3
+'ReDim testnum(i)
+'List1.AddItem UBound(testnum)
+'Next i
+
+End Sub
 
 Private Sub nerghbors_num_Change()
 nei_number = CInt(nerghbors_num.Text)
@@ -655,8 +1016,9 @@ attr9array(6) = "EXC"
 attr9array(7) = "VAC"
 attr9array(8) = "POX"
 attr9array(9) = "ERL"
-List1.AddItem nei_number
-List1.AddItem ""
+
+'List1.AddItem nei_number
+'List1.AddItem ""
 
 datacounter = 0
 
