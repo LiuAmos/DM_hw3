@@ -9,6 +9,14 @@ Begin VB.Form Form1
    ScaleHeight     =   8010
    ScaleWidth      =   10680
    StartUpPosition =   3  '系統預設值
+   Begin VB.CommandButton generatefivefold 
+      Caption         =   "Generate five fold"
+      Height          =   375
+      Left            =   8040
+      TabIndex        =   8
+      Top             =   3960
+      Width           =   1695
+   End
    Begin VB.CommandButton read 
       Caption         =   "read"
       Height          =   495
@@ -30,7 +38,7 @@ Begin VB.Form Form1
       Height          =   615
       Left            =   8880
       TabIndex        =   5
-      Top             =   4200
+      Top             =   4800
       Width           =   1695
    End
    Begin VB.CommandButton forward 
@@ -38,7 +46,7 @@ Begin VB.Form Form1
       Height          =   615
       Left            =   7200
       TabIndex        =   4
-      Top             =   4200
+      Top             =   4800
       Width           =   1575
    End
    Begin VB.ListBox List1 
@@ -83,7 +91,7 @@ Dim datanum As Integer
 Dim nei_number As Integer
 Dim data2darray(9, 1483) As String
 Dim totalfivefoldindex() As String
-Dim attr9array(9) As String
+'Dim attr9array(9) As String
 Dim allattribute() As Double
 
 
@@ -136,7 +144,7 @@ tempdistarray() = distarray()
 tempdistindexarray() = distindexarray()
 
 For i = 0 To UBound(tempdistarray)
-If tempmax < tempdistarray(i) Then
+If distmax < tempdistarray(i) Then
 distmax = tempdistarray(i)
 indexmax = tempdistindexarray(i)
 
@@ -201,80 +209,112 @@ sortrnd = "sortrnd"
 End Function
 Static Function vote(ByRef candidateclass() As String)
 Dim tempcandidateclass() As String
-Dim eachclassnum(9) As Double
+Dim selectattr() As String
+Dim eachclassnum() As Double
 Dim finalclass As String
+Dim selectattrcounter As Double
+Dim flagbegin As Double
+
 tempcandidateclass() = candidateclass()
-For i = 0 To 9
+ReDim eachclassnum(nei_number - 1)
+ReDim selectattr(nei_number - 1)
+selectattrcounter = 0
+flagbegin = 0
+
+For i = 0 To UBound(selectattr)
 eachclassnum(i) = 0
+selectattr(i) = "0"
 Next i
 
 For i = 0 To UBound(tempcandidateclass)
-For j = 0 To 9
-If tempcandidateclass(i) = attr9array(j) Then
-eachclassnum(j) = eachclassnum(j) + 1
-End If
-Next j
+    flagbegin = 0
+    If i = 0 Then
+    selectattr(0) = tempcandidateclass(0)
+    selectattrcounter = selectattrcounter + 1 '要再想想
+    eachclassnum(0) = eachclassnum(0) + 1
+    GoTo zero
+    End If
+    
+    For j = 0 To i
+        If selectattr(j) = tempcandidateclass(i) Then
+        eachclassnum(j) = eachclassnum(j) + 1
+        flagbegin = 1
+        End If
+    Next j
+    
+    If flagbegin = 0 Then
+    selectattr(selectattrcounter) = tempcandidateclass(i)
+    eachclassnum(selectattrcounter) = eachclassnum(selectattrcounter) + 1
+    selectattrcounter = selectattrcounter + 1
+    End If
+zero:
 Next i
+
+'debug
+'For i = 0 To UBound(selectattr)
+'List1.AddItem selectattr(i)
+'List1.AddItem eachclassnum(i)
+'Next i
+
+
+
+'這是舊的
+'For i = 0 To UBound(tempcandidateclass)
+'For j = 0 To 9
+'If tempcandidateclass(i) = attr9array(j) Then
+'eachclassnum(j) = eachclassnum(j) + 1
+'End If
+'Next j
+'Next i
+
+
 
 Select Case nei_number
     Case 3
-        Dim candidate(2) As String
-        Dim c As Double
-        Dim rndindex As Double
-        c = 0
-        For i = 0 To 9
+        For i = 0 To (nei_number - 1)
         
         If eachclassnum(i) >= 2 Then
-        finalclass = attr9array(i)
+        finalclass = selectattr(i)
         GoTo voteend
         End If
         
-        If eachclassnum(i) = 1 Then
-        candidate(c) = attr9array(i)
-        c = c + 1
-        End If
-        
         Next i
-        rndindex = rndclass(nei_number)
-        finalclass = candidate(rndindex) '不懂為啥設為0後1-8跟8-1依舊不同
+ 
+        finalclass = selectattr(0) '不懂為啥設為0後1-8跟8-1依舊不同
         GoTo voteend
         
     Case 4
         Dim twocounter As Double
         Dim onecounter As Double
-        Dim rndindex4 As Double
         Dim candidatetwo(1) As String
         Dim candidatefour(3) As String
         twocounter = 0
         onecounter = 0
         
-        For i = 0 To 9
+        For i = 0 To (nei_number - 1)
         
         If eachclassnum(i) = 1 Then
-        candidatefour(onecounter) = attr9array(i)
+        candidatefour(onecounter) = selectattr(i)
         onecounter = onecounter + 1
         End If
         
         If eachclassnum(i) > 2 Then
-        finalclass = attr9array(i)
+        finalclass = selectattr(i)
         GoTo voteend
         End If
         
         If eachclassnum(i) = 2 Then
-        finalclass = attr9array(i)
-        candidatetwo(twocounter) = attr9array(i)
+        candidatetwo(twocounter) = selectattr(i)
+        finalclass = candidatetwo(0)
         twocounter = twocounter + 1
         End If
         
         If twocounter = 2 Then
-        rndindex4 = rndclass(twocounter)
-        finalclass = candidatetwo(rndindex4)
         GoTo voteend
         End If
         
         If onecounter = 4 Then
-        rndindex4 = rndclass(onecounter)
-        finalclass = candidatefour(rndindex4)
+        finalclass = candidatefour(0)
         GoTo voteend
         End If
         
@@ -289,33 +329,30 @@ Select Case nei_number
         twocounter5 = 0
         onecounter5 = 0
         
-        For i = 0 To 9
+        For i = 0 To (nei_number - 1)
         
         If eachclassnum(i) = 1 Then
-        candidatefive5(onecounter5) = attr9array(i)
+        candidatefive5(onecounter5) = selectattr(i)
         onecounter5 = onecounter5 + 1
         End If
         
         If eachclassnum(i) >= 3 Then
-        finalclass = attr9array(i)
+        finalclass = selectattr(i)
         GoTo voteend
         End If
         
         If eachclassnum(i) = 2 Then
-        finalclass = attr9array(i)
-        candidatetwo5(twocounter5) = attr9array(i)
+        candidatetwo5(twocounter5) = selectattr(i)
+        finalclass = candidatetwo5(0)
         twocounter5 = twocounter5 + 1
         End If
         
         If twocounter5 = 2 Then
-        rndindex5 = rndclass(twocounter5)
-        finalclass = candidatetwo5(rndindex5)
         GoTo voteend
         End If
         
         If onecounter5 = 5 Then
-        rndindex5 = rndclass(onecounter5)
-        finalclass = candidatefive5(rndindex5)
+        finalclass = candidatefive5(0)
         GoTo voteend
         End If
         
@@ -325,7 +362,6 @@ Select Case nei_number
         Dim threecounter6 As Double
         Dim twocounter6 As Double
         Dim onecounter6 As Double
-        Dim rndindex6 As Double
         Dim flag As Double
         Dim candidatetwo6(2) As String
         Dim candidatethree6(1) As String
@@ -335,58 +371,55 @@ Select Case nei_number
         onecounter6 = 0
         threecounter6 = 0
         
-        For i = 0 To 9
+        For i = 0 To (nei_number - 1)
         
         If eachclassnum(i) = 1 Then
-        candidatesix6(onecounter6) = attr9array(i)
+        candidatesix6(onecounter6) = selectattr(i)
         onecounter6 = onecounter6 + 1
         End If
         
         If eachclassnum(i) > 3 Then
-        finalclass = attr9array(i)
+        finalclass = selectattr(i)
         GoTo voteend
         End If
         
         If eachclassnum(i) = 3 Then
-        flag = 1
-        finalclass = attr9array(i)
-        candidatethree6(threecounter6) = attr9array(i)
+        flag = 1 '用來辨識 3 2 1的情況
+        candidatethree6(threecounter6) = selectattr(i)
+        finalclass = candidatethree6(0)
         threecounter6 = threecounter6 + 1
         End If
         
         If threecounter6 = 2 Then
-        rndindex6 = rndclass(threecounter6)
-        finalclass = candidatethree6(rndindex6)
         GoTo voteend
         End If
         
         If eachclassnum(i) = 2 And flag = 0 Then
-        finalclass = attr9array(i)
-        candidatetwo6(twocounter6) = attr9array(i)
+        candidatetwo6(twocounter6) = selectattr(i)
+        finalclass = candidatetwo6(0)
         twocounter6 = twocounter6 + 1
         End If
         
-        If twocounter6 = 2 And onecounter6 = 2 Then
-        rndindex6 = rndclass(twocounter6)
-        finalclass = candidatetwo6(rndindex6)
-        GoTo voteend
-        End If
+'        If twocounter6 = 2 And onecounter6 = 2 Then
+'        rndindex6 = rndclass(twocounter6)
+'        finalclass = candidatetwo6(rndindex6)
+'        GoTo voteend
+'        End If
         
         If twocounter6 = 3 Then
-        rndindex6 = rndclass(twocounter6)
-        finalclass = candidatetwo6(rndindex6)
         GoTo voteend
         End If
         
         If onecounter6 = 6 Then
-        rndindex6 = rndclass(onecounter6)
-        finalclass = candidatesix6(rndindex6)
+        finalclass = candidatesix6(0)
         GoTo voteend
         End If
         
         Next i
 End Select
 voteend:
+'GoTo debugend
+'debugend:
 vote = finalclass
 End Function
 Static Function rndclass(ByVal num As Double)
@@ -582,7 +615,7 @@ Dim avgcorrectrate As Double
 avgcorrectrate = 0
 allattribute() = attrsebset()
 
-totalfivefoldindex() = fivefoldindex()
+'totalfivefoldindex() = fivefoldindex()
 
 '選一個當測試資料,其他四個合成訓練資料
 For i = 0 To 4
@@ -638,21 +671,170 @@ End Function
 Private Sub backward_Click()
 '測試correctratesutset
 List1.Clear
-'Dim subset(6) As Double
+'Dim subset(0) As Double
 'Dim result As Double
-'For i = 0 To UBound(subset)
-'subset(i) = i + 1
-'Next i
+'For i = 0 To 7
+'subset(0) = i + 1
 'result = correctratesutset(subset)
 'List1.AddItem result
+'Next i
+
 '
-Dim subset1(7) As Double
-Dim result1 As Double
-For i = 0 To UBound(subset1)
-subset1(i) = (8 - i)
+'Dim subset1(7) As Double
+'Dim result1 As Double
+'For i = 0 To UBound(subset1)
+'subset1(i) = i + 1
+'Next i
+''subset1(0) = 8
+''subset1(7) = 1
+'result1 = correctratesutset(subset1)
+'List1.AddItem result1
+
+'測試unpick
+'Dim test(7) As Double
+'Dim result() As Double
+'For i = 0 To 7
+'test(i) = -1
+'Next i
+'test(0) = 3
+'test(1) = 8
+'result() = unpickAttr(test)
+'List1.AddItem UBound(result) + 1
+'For i = 0 To UBound(result)
+'List1.AddItem result(i)
+'Next i
+
+'測試gmax
+'gmax(ByRef distarray() As Double, ByRef distindexarray() As Double)
+'Dim dist(2) As Double
+'Dim index(2) As Double
+'Dim result As String
+'index(0) = 1
+'index(1) = 2
+'index(2) = 3
+'dist(0) = 13
+'dist(1) = 9
+'dist(2) = 11
+'result = gmax(dist, index)
+'List1.AddItem result
+
+Dim resultattr(7) As Double '記錄每次踢掉的那一個
+Dim resultmaxvalue(7) As Double '每個set數量的最大值
+Dim deleteone() As Double '每回合刪完某個之後的subset
+Dim tempgoodness() As Double
+Dim tempattr() As Double
+Dim counter As Double
+Dim tempgmaxstr As String
+Dim tempav() As String
+
+For i = 0 To 7
+resultattr(i) = -1
+resultmaxvalue(i) = -1
 Next i
-result1 = correctratesutset(subset1)
-List1.AddItem result1
+
+For i = 0 To 7
+'先決定要丟入subsetgoodness的陣列長度
+
+ReDim deleteone(6 - i) '每回合刪完某個之後的subset,要丟入算正確率
+Dim setnum() As Double '準備要扣掉一個attr前的完整版
+ReDim tempgoodness(7 - i)
+ReDim tempattr(7 - i) '候選被踢的attr
+
+
+
+
+'接著為該陣列塞入目前已選的attr
+
+'找出要留下來的attr
+setnum() = unpickAttr(resultattr)
+
+
+
+
+'每個attr都刪看看
+    For j = 0 To UBound(setnum)
+        If j = 0 Then
+            GoTo jzero
+        End If
+        setnum(j - 1) = tempattr(j - 1)
+jzero:
+        tempattr(j) = setnum(j)
+        setnum(j) = -1 '幫setnum刪掉某一個attr
+        counter = 0
+        For k = 0 To UBound(setnum)
+            If setnum(k) <> -1 Then
+                deleteone(counter) = setnum(k)
+                counter = counter + 1
+            End If
+        Next k
+         '存刪掉的那一個的attr
+        tempgoodness(j) = correctratesutset(deleteone)
+    Next j
+tempgmaxstr = gmax(tempgoodness, tempattr)
+tempav = Split(tempgmaxstr, ",")
+resultattr(i) = CDbl(tempav(0))
+resultmaxvalue(i) = CDbl(tempav(1))
+
+
+'停止條件
+'If i > 0 Then
+'If resultmaxvalue(i) < resultmaxvalue(i - 1) Then
+'Exit For
+'End If
+'End If
+
+'debug
+If i = 2 Then
+Exit For
+End If
+
+Next i
+
+'把最終結果印出來
+For i = 0 To UBound(resultattr)
+List1.AddItem resultattr(i)
+List1.AddItem resultmaxvalue(i)
+List1.AddItem ""
+Next i
+
+'Dim inputarr(7) As Double
+'For i = 0 To 5
+'
+'    Dim printresult() As Double
+'    Dim attrstr As String
+'    attrstr = ""
+'    For j = 0 To 7
+'    inputarr(j) = -1
+'    Next j
+'
+'    For j = 0 To i
+'    inputarr(j) = resultattr(j)
+'    Next j
+'    printresult() = unpickAttr(inputarr)
+'    For j = 0 To UBound(printresult)
+'    attrstr = attrstr + CStr(printresult(j) + 1)
+'    Next j
+'    List1.AddItem "attribute:" + attrstr
+'    List1.AddItem resultmaxvalue(i)
+'    If i = 0 Then
+'    GoTo nozero
+'    End If
+'
+'    If resultmaxvalue(i) < resultmaxvalue(i - 1) Then
+'    Exit For
+'    End If
+'
+'nozero:
+'Next i
+
+'動態陣列測試
+'Dim testnum() As Double
+'For i = 0 To 3
+'ReDim testnum(i)
+'List1.AddItem UBound(testnum)
+'Next i
+
+'totalsetb = "End"
 
 End Sub
 
@@ -703,15 +885,15 @@ Next i
 'List1.AddItem result
 
 '測試vote
-'Dim votestring(2) As String
+'Dim votestring(5) As String
 'Dim result As String
 ''CYT,NUC,MIT,VAC,POX,ERL
-'votestring(0) = "ERL"
-'votestring(1) = "POX"
-'votestring(2) = "POX"
-''votestring(3) = "POX"
-''votestring(4) = "POX"
-''votestring(5) = "POX"
+'votestring(0) = "POX"
+'votestring(1) = "ERL"
+'votestring(2) = "ERL"
+'votestring(3) = "VAC"
+'votestring(4) = "VAC"
+'votestring(5) = "MIT"
 'result = vote(votestring)
 'List1.AddItem result
 
@@ -894,6 +1076,9 @@ List1.Clear
 Dim resultattr(7) As Double '每個set的最大值新選的那個attr
 Dim resultmaxvalue(7) As Double '每個set數量的最大值
 Dim setnum() As Double
+Dim tempgmaxstr As String
+Dim tempav() As String
+
 
 Dim tempgoodness() As Double
 Dim tempattr() As Double
@@ -905,7 +1090,7 @@ Next i
 
 For i = 0 To 7
 '先決定要丟入subsetgoodness的陣列長度
-ReDim setnum(i) '丟入subsetgoodness的陣列
+ReDim setnum(i) '丟進去算正確率
 Dim tempunpickAttr() As Double
 ReDim tempgoodness(7 - i)
 ReDim tempattr(7 - i)
@@ -940,6 +1125,7 @@ tempunpickAttr() = unpickAttr(resultattr)
         tempattr(j) = tempunpickAttr(j) '丟進gmax用的
         tempgoodness(j) = correctratesutset(setnum)
     Next j
+    
 tempgmaxstr = gmax(tempgoodness, tempattr)
 tempav = Split(tempgmaxstr, ",")
 resultattr(i) = CDbl(tempav(0))
@@ -951,6 +1137,11 @@ resultmaxvalue(i) = CDbl(tempav(1))
 'If resultmaxvalue(i) < resultmaxvalue(i - 1) Then
 'Exit For
 'End If
+'End If
+
+'debug
+'If i = 1 Then
+'Exit For
 'End If
 
 'GoTo test
@@ -998,6 +1189,10 @@ Next i
 
 End Sub
 
+Private Sub generatefivefold_Click()
+totalfivefoldindex() = fivefoldindex()
+End Sub
+
 Private Sub nerghbors_num_Change()
 nei_number = CInt(nerghbors_num.Text)
 End Sub
@@ -1006,16 +1201,16 @@ Private Sub read_Click()
 List1.Clear
 Dim datacounter As Integer
 Dim temp() As String
-attr9array(0) = "CYT"
-attr9array(1) = "NUC"
-attr9array(2) = "MIT"
-attr9array(3) = "ME3"
-attr9array(4) = "ME2"
-attr9array(5) = "ME1"
-attr9array(6) = "EXC"
-attr9array(7) = "VAC"
-attr9array(8) = "POX"
-attr9array(9) = "ERL"
+'attr9array(0) = "CYT"
+'attr9array(1) = "NUC"
+'attr9array(2) = "MIT"
+'attr9array(3) = "ME3"
+'attr9array(4) = "ME2"
+'attr9array(5) = "ME1"
+'attr9array(6) = "EXC"
+'attr9array(7) = "VAC"
+'attr9array(8) = "POX"
+'attr9array(9) = "ERL"
 
 'List1.AddItem nei_number
 'List1.AddItem ""
