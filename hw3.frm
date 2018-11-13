@@ -1152,7 +1152,7 @@ End Function
 
 Private Sub forward_Click()
 List1.Clear
-GoTo backend
+
 
 'result = correctratesutset(subset)
 Dim resultattr(7) As Double '每個set的最大值新選的那個attr
@@ -1215,11 +1215,11 @@ resultmaxvalue(i) = CDbl(tempav(1))
 
 
 '停止條件
-'If i > 0 Then
-'If resultmaxvalue(i) < resultmaxvalue(i - 1) Then
-'Exit For
-'End If
-'End If
+If i > 0 Then
+If resultmaxvalue(i) < resultmaxvalue(i - 1) Then
+Exit For
+End If
+End If
 
 'debug
 'If i = 1 Then
@@ -1232,30 +1232,32 @@ resultmaxvalue(i) = CDbl(tempav(1))
 Next i
 
 '把最終結果印出來
-For i = 0 To UBound(resultattr)
-List1.AddItem resultattr(i)
-List1.AddItem resultmaxvalue(i)
-List1.AddItem ""
-Next i
-backend:
+'For i = 0 To UBound(resultattr)
+'List1.AddItem resultattr(i)
+'List1.AddItem resultmaxvalue(i)
+'List1.AddItem ""
+'Next i
+
+'GoTo forend
+'forend:
 
 
 '印出結果測試
-Dim ttresultattr(7) As Double
-Dim ttresultmaxvalue(7) As Double
-For i = 0 To 7
-ttresultattr(i) = -1
-ttresultmaxvalue(i) = -1
-Next i
-ttresultattr(0) = 5
-ttresultattr(1) = 8
-ttresultattr(2) = 3
-ttresultmaxvalue(0) = 11
-ttresultmaxvalue(1) = 12
-ttresultmaxvalue(2) = 13
+'Dim ttresultattr(7) As Double
+'Dim ttresultmaxvalue(7) As Double
+'For i = 0 To 7
+'ttresultattr(i) = -1
+'ttresultmaxvalue(i) = -1
+'Next i
+'ttresultattr(0) = 5
+'ttresultattr(1) = 8
+'ttresultattr(2) = 3
+'ttresultmaxvalue(0) = 11
+'ttresultmaxvalue(1) = 12
+'ttresultmaxvalue(2) = 13
 '印出結果
 Dim resultback As String
-resultback = printback(resultattr, resultmaxvalue)
+resultback = printfor(resultattr, resultmaxvalue)
 List1.AddItem resultback
 
 
@@ -1272,40 +1274,28 @@ Dim tempresultattr() As Double
 Dim tempresultmaxvalue() As Double
 Dim attrstring As String
 Dim maxvaluetring As String
-Dim inputunpick(7) As Double
-Dim outputunpick() As Double
+Dim eachattribute() As Double
 tempresultattr() = tresultattr()
 tempresultmaxvalue() = tresultmaxvalue()
-Dim tattrarray(7) As Double
-Dim tattrresult As Double
-For i = 0 To UBound(tattrarray)
-tattrarray(i) = i + 1
-Next i
-tattrresult = correctratesutset(tattrarray)
 
-List1.AddItem "Attribute: 1 2 3 4 5 6 7 8"
-List1.AddItem "Correct rate: " + CStr(tattrresult)
-List1.AddItem ""
+
 
 For i = 0 To UBound(tempresultattr)
 If tempresultattr(i) = -1 Then
 Exit For
 End If
 
-'ReDim inputunpick(i)
-For j = 0 To UBound(inputunpick)
-inputunpick(j) = -1
-Next j
+ReDim eachattribute(i)
 attrstring = "Attribute:"
 maxvaluetring = "Correct rate: "
 
 For j = 0 To i
-inputunpick(j) = tempresultattr(j)
+eachattribute(j) = tempresultattr(j)
 Next j
-outputunpick = unpickAttr(inputunpick)
 
-For j = 0 To UBound(outputunpick)
-attrstring = attrstring + " " + CStr(outputunpick(j))
+
+For j = 0 To UBound(eachattribute)
+attrstring = attrstring + " " + CStr(eachattribute(j))
 Next j
 maxvaluetring = maxvaluetring + " " + CStr(tempresultmaxvalue(i))
 
@@ -1313,7 +1303,7 @@ List1.AddItem attrstring
 List1.AddItem maxvaluetring
 List1.AddItem ""
 Next i
-printback = "End"
+printfor = "End"
 End Function
 
 Private Sub generatefivefold_Click()
