@@ -86,6 +86,17 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+'操作方式說明
+'txt檔名/資料筆錄/k值(3,4,5,6)需要手動輸入
+
+'看8個屬性的5-fold在不同k值的正確率時,請注意每改一次k值都要重新run程式
+'按法接為:read->5-fold cross validation(total attributes)(記得改k值)
+'等待時間大約10-15秒
+
+'接著如果要看不同k值在forward,backward的正確率也都需要將程式關掉重新run
+'按法皆為:read->Generate five fold->forward or backward(記得改k值)
+'等待時間foward大多不超過4分30秒,backward大多不超過3分30秒
+
 Dim file As String
 Dim datanum As Integer
 Dim nei_number As Integer
@@ -671,6 +682,7 @@ End Function
 Private Sub backward_Click()
 '測試correctratesutset
 List1.Clear
+
 'Dim subset(0) As Double
 'Dim result As Double
 'For i = 0 To 7
@@ -777,13 +789,13 @@ resultmaxvalue(i) = CDbl(tempav(1))
 
 
 '停止條件
-'If i > 0 Then
-'If resultmaxvalue(i) < resultmaxvalue(i - 1) Then
-'Exit For
-'End If
-'End If
+If i > 0 Then
+If resultmaxvalue(i) < resultmaxvalue(i - 1) Then
+Exit For
+End If
+End If
 
-'debug
+'以防萬一跑很久
 If i = 2 Then
 Exit For
 End If
@@ -791,11 +803,31 @@ End If
 Next i
 
 '把最終結果印出來
-For i = 0 To UBound(resultattr)
-List1.AddItem resultattr(i)
-List1.AddItem resultmaxvalue(i)
-List1.AddItem ""
-Next i
+'For i = 0 To UBound(resultattr)
+'List1.AddItem resultattr(i)
+'List1.AddItem resultmaxvalue(i)
+'List1.AddItem ""
+'Next i
+'GoTo backend
+'backend:
+
+'印出結果測試
+'Dim ttresultattr(7) As Double
+'Dim ttresultmaxvalue(7) As Double
+'For i = 0 To 7
+'ttresultattr(i) = -1
+'ttresultmaxvalue(i) = -1
+'Next i
+'ttresultattr(0) = 5
+'ttresultattr(1) = 8
+'ttresultattr(2) = 3
+'ttresultmaxvalue(0) = 11
+'ttresultmaxvalue(1) = 12
+'ttresultmaxvalue(2) = 13
+'印出結果
+Dim resultback As String
+resultback = printback(resultattr, resultmaxvalue)
+List1.AddItem resultback
 
 'Dim inputarr(7) As Double
 'For i = 0 To 5
@@ -836,8 +868,56 @@ Next i
 
 'totalsetb = "End"
 
-End Sub
 
+End Sub
+Static Function printback(ByRef tresultattr() As Double, ByRef tresultmaxvalue() As Double)
+Dim tempresultattr() As Double
+Dim tempresultmaxvalue() As Double
+Dim attrstring As String
+Dim maxvaluetring As String
+Dim inputunpick(7) As Double
+Dim outputunpick() As Double
+tempresultattr() = tresultattr()
+tempresultmaxvalue() = tresultmaxvalue()
+Dim tattrarray(7) As Double
+Dim tattrresult As Double
+For i = 0 To UBound(tattrarray)
+tattrarray(i) = i + 1
+Next i
+tattrresult = correctratesutset(tattrarray)
+
+List1.AddItem "Attribute: 1 2 3 4 5 6 7 8"
+List1.AddItem "Correct rate: " + CStr(tattrresult)
+List1.AddItem ""
+
+For i = 0 To UBound(tempresultattr)
+If tempresultattr(i) = -1 Then
+Exit For
+End If
+
+'ReDim inputunpick(i)
+For j = 0 To UBound(inputunpick)
+inputunpick(j) = -1
+Next j
+attrstring = "Attribute:"
+maxvaluetring = "Correct rate: "
+
+For j = 0 To i
+inputunpick(j) = tempresultattr(j)
+Next j
+outputunpick = unpickAttr(inputunpick)
+
+For j = 0 To UBound(outputunpick)
+attrstring = attrstring + " " + CStr(outputunpick(j))
+Next j
+maxvaluetring = maxvaluetring + " " + CStr(tempresultmaxvalue(i))
+
+List1.AddItem attrstring
+List1.AddItem maxvaluetring
+List1.AddItem ""
+Next i
+printback = "End"
+End Function
 Private Sub cross_validation_Click()
 List1.Clear
 'Dim tempfivefoldindex() As String '存5組字串
@@ -1072,6 +1152,8 @@ End Function
 
 Private Sub forward_Click()
 List1.Clear
+GoTo backend
+
 'result = correctratesutset(subset)
 Dim resultattr(7) As Double '每個set的最大值新選的那個attr
 Dim resultmaxvalue(7) As Double '每個set數量的最大值
@@ -1155,29 +1237,26 @@ List1.AddItem resultattr(i)
 List1.AddItem resultmaxvalue(i)
 List1.AddItem ""
 Next i
+backend:
 
-'List1.AddItem "attribute:" + CStr(resultattr(0) + 1)
-'List1.AddItem resultmaxvalue(0)
-'
-'List1.AddItem "attribute:" + CStr(resultattr(0) + 1) + CStr(resultattr(1) + 1)
-'
-'List1.AddItem resultmaxvalue(1)
-'
-'List1.AddItem "attribute:" + CStr(resultattr(0) + 1) + CStr(resultattr(1) + 1) + CStr(resultattr(2) + 1)
-'List1.AddItem resultmaxvalue(2)
-'
-'List1.AddItem "attribute:" + CStr(resultattr(0) + 1) + CStr(resultattr(1) + 1) + CStr(resultattr(2) + 1) + CStr(resultattr(3) + 1)
-'List1.AddItem resultmaxvalue(3)
-'
-'List1.AddItem "attribute:" + CStr(resultattr(0) + 1) + CStr(resultattr(1) + 1) + CStr(resultattr(2) + 1) + CStr(resultattr(3) + 1) + CStr(resultattr(4) + 1)
-'List1.AddItem resultmaxvalue(4)
-'If choicefb = 0 Then
-'GoTo choicefbzero
-'End If
-'List1.AddItem "attribute:" + CStr(resultattr(0) + 1) + CStr(resultattr(1) + 1) + CStr(resultattr(2) + 1) + CStr(resultattr(3) + 1) + CStr(resultattr(4) + 1) + CStr(resultattr(5) + 1)
-'List1.AddItem resultmaxvalue(5)
-'choicefbzero:
 
+'印出結果測試
+Dim ttresultattr(7) As Double
+Dim ttresultmaxvalue(7) As Double
+For i = 0 To 7
+ttresultattr(i) = -1
+ttresultmaxvalue(i) = -1
+Next i
+ttresultattr(0) = 5
+ttresultattr(1) = 8
+ttresultattr(2) = 3
+ttresultmaxvalue(0) = 11
+ttresultmaxvalue(1) = 12
+ttresultmaxvalue(2) = 13
+'印出結果
+Dim resultback As String
+resultback = printback(resultattr, resultmaxvalue)
+List1.AddItem resultback
 
 
 '動態陣列測試
@@ -1188,6 +1267,54 @@ Next i
 'Next i
 
 End Sub
+Static Function printfor(ByRef tresultattr() As Double, ByRef tresultmaxvalue() As Double)
+Dim tempresultattr() As Double
+Dim tempresultmaxvalue() As Double
+Dim attrstring As String
+Dim maxvaluetring As String
+Dim inputunpick(7) As Double
+Dim outputunpick() As Double
+tempresultattr() = tresultattr()
+tempresultmaxvalue() = tresultmaxvalue()
+Dim tattrarray(7) As Double
+Dim tattrresult As Double
+For i = 0 To UBound(tattrarray)
+tattrarray(i) = i + 1
+Next i
+tattrresult = correctratesutset(tattrarray)
+
+List1.AddItem "Attribute: 1 2 3 4 5 6 7 8"
+List1.AddItem "Correct rate: " + CStr(tattrresult)
+List1.AddItem ""
+
+For i = 0 To UBound(tempresultattr)
+If tempresultattr(i) = -1 Then
+Exit For
+End If
+
+'ReDim inputunpick(i)
+For j = 0 To UBound(inputunpick)
+inputunpick(j) = -1
+Next j
+attrstring = "Attribute:"
+maxvaluetring = "Correct rate: "
+
+For j = 0 To i
+inputunpick(j) = tempresultattr(j)
+Next j
+outputunpick = unpickAttr(inputunpick)
+
+For j = 0 To UBound(outputunpick)
+attrstring = attrstring + " " + CStr(outputunpick(j))
+Next j
+maxvaluetring = maxvaluetring + " " + CStr(tempresultmaxvalue(i))
+
+List1.AddItem attrstring
+List1.AddItem maxvaluetring
+List1.AddItem ""
+Next i
+printback = "End"
+End Function
 
 Private Sub generatefivefold_Click()
 totalfivefoldindex() = fivefoldindex()
