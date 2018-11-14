@@ -915,7 +915,16 @@ maxvaluetring = maxvaluetring + " " + CStr(tempresultmaxvalue(i))
 List1.AddItem attrstring
 List1.AddItem maxvaluetring
 List1.AddItem ""
+
+'·s¥[ªº
+If tempresultmaxvalue(i) < tattrresult Then
+Exit For
+End If
+
 Next i
+
+
+
 printback = "End"
 End Function
 Private Sub cross_validation_Click()
